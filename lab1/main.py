@@ -64,7 +64,7 @@ def main():
     ts_x = [row["A"] for row in ts]
 
     # Featurize test data
-    vectorizer = CountVectorizer(tokenizer=LemmaTokenizer())
+    vectorizer = CountVectorizer(tokenizer=LemmaTokenizer(), lowercase=True)
 #HashingVectorizer(stop_words='english', alternate_sign=False, n_features=2 ** 16)
     tr_vectors = vectorizer.fit_transform(tr_x)
 
