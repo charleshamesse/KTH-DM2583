@@ -1,6 +1,7 @@
 import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import svm
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report
 
 def xlsx(fname):
@@ -49,10 +50,8 @@ def main():
     tr_x = tr[0]
     tr_y = tr[1]
 
-    ts = [0,1]#load_data(path)
-    ts_x = ts[0]
-    ts_y = ts[1]
-
+    ts = xlsx("data/test_set.xlsx")
+    ts_x = [row["A"] for row in ts]
 
     vectorizer = TfidfVectorizer(min_df=5,
                                  max_df = 0.8,
@@ -60,7 +59,8 @@ def main():
                                  use_idf=True)
     tr_vectors = vectorizer.fit_transform(tr_x)
 
-    # Perform classification with SVM, kernel=rbf
+    # TODO: use naive bayes
+    '''
     classifier_rbf = svm.SVC()
     t0 = time.time()
     classifier_rbf.fit(tr_vectors, tr_y)
@@ -74,12 +74,6 @@ def main():
     print("Results for SVC(kernel=rbf)")
     print("Training time: %fs; Prediction time: %fs" % (time_rbf_train, time_rbf_predict))
     #print(classification_report(ts_y, prediction_rbf))
-
-    '''
-    k = 0
-    while k < 10:
-        print(tr_x[k])
-        k += 1
     '''
 
 if __name__ == '__main__':
