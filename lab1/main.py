@@ -60,6 +60,13 @@ def main():
     tr_vectors = vectorizer.fit_transform(tr_x)
 
     # TODO: use naive bayes
+    clf = MultinomialNB()
+    clf.fit(tr_vectors, tr_y)
+    ts_x_featurized = vectorizer.transform(ts_x)
+    predictions = clf.predict(ts_x_featurized[1:10])
+
+    print(predictions)
+
     '''
     classifier_rbf = svm.SVC()
     t0 = time.time()
