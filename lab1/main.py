@@ -1,8 +1,17 @@
 import time
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from sklearn import svm
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report
+from nltk import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+
+class LemmaTokenizer(object):
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
 
 def xlsx(fname):
     import zipfile
@@ -46,6 +55,7 @@ def load_data(path):
     return [tr_x, tr_y]
 
 def main():
+    # Fetch train and test data
     tr = load_data("data/train_set.txt")
     tr_x = tr[0]
     tr_y = tr[1]
@@ -53,19 +63,23 @@ def main():
     ts = xlsx("data/test_set.xlsx")
     ts_x = [row["A"] for row in ts]
 
-    vectorizer = TfidfVectorizer(min_df=5,
-                                 max_df = 0.8,
-                                 sublinear_tf=True,
-                                 use_idf=True)
+    # Featurize test data
+    vectorizer = CountVectorizer(tokenizer=LemmaTokenizer())
+#HashingVectorizer(stop_words='english', alternate_sign=False, n_features=2 ** 16)
     tr_vectors = vectorizer.fit_transform(tr_x)
 
-    # TODO: use naive bayes
+    # Instanciate classifier
     clf = MultinomialNB()
     clf.fit(tr_vectors, tr_y)
     ts_x_featurized = vectorizer.transform(ts_x)
-    predictions = clf.predict(ts_x_featurized[1:10])
 
-    print(predictions)
+    # Make predictions
+    predictions = clf.predict(ts_x_featurized[1:10])
+    i = 0
+    for row in predictions:
+        print([row, ts_x[i]])
+        print()
+        i = i + 1
 
     '''
     classifier_rbf = svm.SVC()
