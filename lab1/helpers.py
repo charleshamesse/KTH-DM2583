@@ -39,3 +39,11 @@ def load_txt(path):
             tr_x.append(line_components[1])
 
     return [tr_x, tr_y]
+
+def load_csv(path):
+    import csv
+    tr_y = []
+    with open(path, 'r') as f:
+        for row in csv.reader(f):
+            tr_y.append(row[0])
+    return tr_y

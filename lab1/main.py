@@ -5,8 +5,9 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
-from helpers import load_txt, load_xlsx
+from helpers import load_txt, load_xlsx, load_csv
 
+compare_datasets = False
 
 class LemmaTokenizer(object):
     def __init__(self):
@@ -28,6 +29,17 @@ def main():
     ts_y = ts_y_raw[1]
     ts_y = ts_y[0:len(ts_y)-1] # because there's a new line at the end
 
+    if compare_datasets:
+        # Check our test labels against Eysteinn's
+        ts_y_alternate = load_csv("data/test_dataset.csv")
+        different = []
+        for i in range(len(ts_y_alternate)):
+            if ts_y[i] is not ts_y_alternate[i]:
+                different.append(i)
+        print("Number of different entries:")
+        print(len(different))
+        print(different)
+
     print("Creating features from training set..")
     vectorizer = CountVectorizer(tokenizer=LemmaTokenizer(), lowercase=True)
     tr_vectors = vectorizer.fit_transform(tr_x)
@@ -37,7 +49,6 @@ def main():
     clf.fit(tr_vectors, tr_y)
     ts_x_featurized = vectorizer.transform(ts_x)
 
-    # Make predictions
     print("Making predictions..")
     predictions = clf.predict(ts_x_featurized)
     t1 = time.time()
