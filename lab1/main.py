@@ -5,6 +5,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from helpers import load_txt, load_xlsx
 
 
 class LemmaTokenizer(object):
@@ -13,89 +14,44 @@ class LemmaTokenizer(object):
     def __call__(self, doc):
         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
 
-def xlsx(fname):
-    import zipfile
-    from xml.etree.ElementTree import iterparse
-    z = zipfile.ZipFile(fname)
-    strings = [el.text for e, el in iterparse(z.open('xl/sharedStrings.xml')) if el.tag.endswith('}t')]
-    rows = []
-    row = {}
-    value = ''
-    for e, el in iterparse(z.open('xl/worksheets/sheet1.xml')):
-        if el.tag.endswith('}v'): # <v>84</v>
-            value = el.text
-        if el.tag.endswith('}c'): # <c r="A3" t="s"><v>84</v></c>
-            if el.attrib.get('t') == 's':
-                value = strings[int(value)]
-            letter = el.attrib['r'] # AZ22
-            while letter[-1].isdigit():
-                letter = letter[:-1]
-            row[letter] = value
-            value = ''
-        if el.tag.endswith('}row'):
-            rows.append(row)
-            row = {}
-    return rows
-
-
-def load_data(path):
-    lines = []
-    tr_x = []
-    tr_y = []
-
-    with open(path) as f:
-        content = f.read()
-        lines = content.split('\n')
-
-    for line in lines:
-        line_components = line.split('\t')
-        tr_x.append(line_components[1])
-        tr_y.append(line_components[0])
-
-    return [tr_x, tr_y]
-
 def main():
-    # Fetch train and test data
-    tr = load_data("data/train_set.txt")
+    t0 = time.time()
+    print("Fetching training and testing datasets..")
+    tr = load_txt("data/train_set.txt")
     tr_x = tr[0]
     tr_y = tr[1]
 
-    ts = xlsx("data/test_set.xlsx")
-    ts_x = [row["A"] for row in ts]
+    ts_x_raw = load_xlsx("data/test_set.xlsx")
+    ts_x = [row["A"] for row in ts_x_raw]
 
-    # Featurize test data
+    ts_y_raw = load_txt("data/test_set_y.txt")
+    ts_y = ts_y_raw[1]
+    ts_y = ts_y[0:len(ts_y)-1] # because there's a new line at the end
+
+    print("Creating features from training set..")
     vectorizer = CountVectorizer(tokenizer=LemmaTokenizer(), lowercase=True)
-#HashingVectorizer(stop_words='english', alternate_sign=False, n_features=2 ** 16)
     tr_vectors = vectorizer.fit_transform(tr_x)
 
-    # Instanciate classifier
+    print("Creating MultinomialNB classifier..")
     clf = MultinomialNB()
     clf.fit(tr_vectors, tr_y)
     ts_x_featurized = vectorizer.transform(ts_x)
 
     # Make predictions
-    predictions = clf.predict(ts_x_featurized[1:10])
+    print("Making predictions..")
+    predictions = clf.predict(ts_x_featurized)
+    t1 = time.time()
+    dt = t1 - t0
     i = 0
+    correct_predictions = 0
     for row in predictions:
-        print([row, ts_x[i]])
-        print()
+        if row == ts_y[i]:
+            correct_predictions = correct_predictions + 1
         i = i + 1
 
-    '''
-    classifier_rbf = svm.SVC()
-    t0 = time.time()
-    classifier_rbf.fit(tr_vectors, tr_y)
-    t1 = time.time()
-    #prediction_rbf = classifier_rbf.predict(test_vectors)
-    #t2 = time.time()
-    #time_rbf_train = t1-t0
-    #time_rbf_predict = t2-t1
+    print("Result: %d/%d correct predictions (%.2f%%), in %.2fs.\n" % (correct_predictions, len(predictions), 100.*correct_predictions/len(predictions), dt))
+    print(classification_report(ts_y, predictions))
 
-    # Print results in a nice table
-    print("Results for SVC(kernel=rbf)")
-    print("Training time: %fs; Prediction time: %fs" % (time_rbf_train, time_rbf_predict))
-    #print(classification_report(ts_y, prediction_rbf))
-    '''
 
 if __name__ == '__main__':
     main()
