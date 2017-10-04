@@ -1,7 +1,10 @@
 import time
 import random
+import itertools
+import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from sklearn import svm
+from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report
 from sklearn.neural_network import MLPClassifier
@@ -20,11 +23,11 @@ class LemmaTokenizer(object):
 def main():
     t0 = time.time()
     print("Fetching training and testing datasets..")
-    data = get_data('data/data.json')
+    data = get_data('data/data_music.json')
 
     random.shuffle(data)
     train_data = data[0:int(len(data)/2)]
-    test_data = data[int(len(data)/2):len(a)]
+    test_data = data[int(len(data)/2):len(data)]
 
     trainX, trainY = split_text_rating(train_data)
     testX, testY = split_text_rating(test_data)
@@ -34,8 +37,16 @@ def main():
     tr_vectors = vectorizer.fit_transform(trainX)
 
     print("Creating classifier..")
-    clf = MLPClassifier()
+    parameters = {
+        'learning_rate': ["constant", "invscaling", "adaptive"],
+        'hidden_layer_sizes': [x for x in itertools.product((10,60,110,160),repeat=3)],
+        'alpha': 10.0 ** -np.arange(1, 5),
+        'activation': ["logistic", "relu"]
+    }
+    mlp = MLPClassifier()
+    clf = GridSearchCV(mlp, parameters)
     clf.fit(tr_vectors, trainY)
+    sorted(clf.cv_results_.keys())
     ts_x_featurized = vectorizer.transform(testX)
 
     print("Making predictions..")
