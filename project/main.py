@@ -24,7 +24,7 @@ def main():
 
     random.shuffle(data)
     train_data = data[0:int(len(data)/2)]
-    test_data = data[int(len(data)/2):len(a)]
+    test_data = data[int(len(data)/2):len(data)]
 
     trainX, trainY = split_text_rating(train_data)
     testX, testY = split_text_rating(test_data)
@@ -34,7 +34,7 @@ def main():
     tr_vectors = vectorizer.fit_transform(trainX)
 
     print("Creating classifier..")
-    clf = MLPClassifier()
+    clf = MultinomialNB()
     clf.fit(tr_vectors, trainY)
     ts_x_featurized = vectorizer.transform(testX)
 
@@ -50,7 +50,7 @@ def main():
         i = i + 1
 
     print("Result: %d/%d correct predictions (%.2f%%), in %.2fs.\n" % (correct_predictions, len(predictions), 100.*correct_predictions/len(predictions), dt))
-    print(classification_report(ts_y, predictions))
+    print(classification_report(testY, predictions))
 
 
 if __name__ == '__main__':
