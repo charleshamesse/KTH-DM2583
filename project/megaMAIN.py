@@ -21,8 +21,8 @@ class LemmaTokenizer(object):
 
 def main():
     print("Fetching training and testing datasets..")
-    train_data = get_data('data/data_music.json')[0:100]
-    test_data = get_data('data/data_music.json')[0:100]
+    train_data = get_data('data/data_movies_tr.json')[0:100]
+    test_data = get_data('data/data_movies_ts.json')[0:100]
 
     trainX, trainY = split_text_rating(train_data)
     testX, testY = split_text_rating(test_data)
@@ -35,7 +35,7 @@ def main():
     
     
     params = {'trainX':tr_vectors, 'trainY':trainY, 'testX':ts_x_featurized, 'testY':testY}
-    knnclf = train_and_test(KNeighborsClassifier(n_neighbors=3), params, 'knn')
+    knnclf = train_and_test(KNeighborsClassifier(n_neighbors=40), params, 'knn')
     svmclf = train_and_test(svm.SVC(kernel='poly', C=5, degree=4, coef0=2), params, 'svm')
     nnclf = train_and_test(MLPClassifier(max_iter=500, alpha=0.01, activation="logistic", learning_rate="invscaling", hidden_layer_sizes=(10, 10, 110)), params, 'neural network')
     nbclf = train_and_test(MultinomialNB(), params, 'naïve Bayes')
