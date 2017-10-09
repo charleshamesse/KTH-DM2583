@@ -21,8 +21,8 @@ class LemmaTokenizer(object):
 
 def main():
     print("Fetching training and testing datasets..")
-    train_data = get_data('data/data_movies_tr.json')[0:100]
-    test_data = get_data('data/data_movies_ts.json')[0:100]
+    train_data = get_data('data/data_movies_tr.json')
+    test_data = get_data('data/data_movies_ts.json')
 
     trainX, trainY = split_text_rating(train_data)
     testX, testY = split_text_rating(test_data)
