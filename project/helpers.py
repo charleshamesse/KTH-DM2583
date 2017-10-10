@@ -1,9 +1,14 @@
 def get_data(filename):
 	f = open(filename, 'r')
 	a = []
+	i = 0
 	for l in f:
-		line = eval(l)
-		a.append((line["reviewText"], int(line["overall"])))
+		try:
+			line = eval(l)
+			a.append((line["reviewText"], int(line["overall"])))
+		except Exception as e:
+			print(e, line, "\n#", i)
+		i = i + 1
 	return a
 
 def split_text_rating(data):

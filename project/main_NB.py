@@ -61,7 +61,7 @@ def main():
         i = i + 1
 
     print("Result: %d/%d correct predictions (%.2f%%), in %.2fs.\n" % (correct_predictions, len(predictions), 100.*correct_predictions/len(predictions), dt))
-    print(classification_report(ts_y, predictions))
+    print(classification_report(testY, predictions))
 
 
 if __name__ == '__main__':
